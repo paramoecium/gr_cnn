@@ -51,7 +51,7 @@ end
 print '==> defining some tools'
 
 -- classes
-classes = {'0','1','2','3'}
+classes = {"1","2","3","4"}
 
 -- This matrix records the current confusion across classes
 confusion = optim.ConfusionMatrix(classes)
@@ -158,11 +158,14 @@ function train()
                        for i = 1,#inputs do
                           -- estimate f
                           local output = model:forward(inputs[i])
+                          -- print("myDEBUG",inputs[i],output,targets[i])
                           local err = criterion:forward(output, targets[i])
+                          -- print("myDEBUG",err)
                           f = f + err
 
                           -- estimate df/dW
                           local df_do = criterion:backward(output, targets[i])
+                          -- print("myDEBUG",df_do)
                           model:backward(inputs[i], df_do)
 
                           -- update confusion

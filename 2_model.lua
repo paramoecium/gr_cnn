@@ -26,7 +26,7 @@ if not opt then
    cmd:text('SVHN Model Definition')
    cmd:text()
    cmd:text('Options:')
-   cmd:option('-model', 'convnet', 'type of model to construct: linear | mlp | convnet')
+   cmd:option('-model', 'linear', 'type of model to construct: linear | mlp | convnet')
    cmd:option('-visualize', true, 'visualize input data and weights during training')
    cmd:text()
    opt = cmd:parse(arg or {})
@@ -35,7 +35,7 @@ end
 ----------------------------------------------------------------------
 print '==> define parameters'
 
--- 10-class problem
+-- 4-class problem
 noutputs = 4
 
 -- input dimensions
@@ -49,7 +49,7 @@ nhiddens = ninputs / 2
 
 -- hidden units, filter sizes (for ConvNet only):
 nstates = {64,64,128}
-filtsize = 5
+filtsize = 13
 poolsize = 2
 normkernel = image.gaussian1D(7)
 
@@ -75,6 +75,8 @@ elseif opt.model == 'mlp' then
 elseif opt.model == 'convnet' then
 
    if opt.type == 'cuda' then
+      print("cuda ing")
+--[[
       -- a typical modern convolution network (conv+relu+pool)
       model = nn.Sequential()
 
@@ -94,6 +96,7 @@ elseif opt.model == 'convnet' then
       model:add(nn.Linear(nstates[2]*filtsize*filtsize, nstates[3]))
       model:add(nn.ReLU())
       model:add(nn.Linear(nstates[3], noutputs))
+--]]
 
    else
       -- a typical convolutional network, with locally-normalized hidden
@@ -109,20 +112,20 @@ elseif opt.model == 'convnet' then
       model = nn.Sequential()
 
       -- stage 1 : filter bank -> squashing -> L2 pooling -> normalization
-      model:add(nn.SpatialConvolutionMM(nfeats, nstates[1], filtsize, filtsize))
+      model:add(nn.SpatialConvolutionMM(nfeats, nstates[1], filtsize, height))
       model:add(nn.Tanh())
-      model:add(nn.SpatialLPPooling(nstates[1],2,poolsize,poolsize,poolsize,poolsize))
-      model:add(nn.SpatialSubtractiveNormalization(nstates[1], normkernel))
+      model:add(nn.SpatialLPPooling(nstates[1],2,poolsize,1,poolsize,1))
+      -- model:add(nn.SpatialSubtractiveNormalization(nstates[1], normkernel))
 
       -- stage 2 : filter bank -> squashing -> L2 pooling -> normalization
-      model:add(nn.SpatialConvolutionMM(nstates[1], nstates[2], filtsize, filtsize))
+      model:add(nn.SpatialConvolutionMM(nstates[1], nstates[2], filtsize, 1))
       model:add(nn.Tanh())
-      model:add(nn.SpatialLPPooling(nstates[2],2,poolsize,poolsize,poolsize,poolsize))
-      model:add(nn.SpatialSubtractiveNormalization(nstates[2], normkernel))
+      model:add(nn.SpatialLPPooling(nstates[2],2,poolsize,1,poolsize,1))
+      -- model:add(nn.SpatialSubtractiveNormalization(nstates[2], normkernel))
 
       -- stage 3 : standard 2-layer neural network
-      model:add(nn.Reshape(nstates[2]*filtsize*filtsize))
-      model:add(nn.Linear(nstates[2]*filtsize*filtsize, nstates[3]))
+      model:add(nn.Reshape(nstates[2]*16*1))
+      model:add(nn.Linear(nstates[2]*16*1, nstates[3]))
       model:add(nn.Tanh())
       model:add(nn.Linear(nstates[3], noutputs))
    end

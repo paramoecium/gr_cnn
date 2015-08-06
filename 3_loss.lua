@@ -29,7 +29,7 @@ if not opt then
 end
 
 -- 10-class problem
-noutputs = 10
+noutputs = 4
 
 ----------------------------------------------------------------------
 print '==> define loss'

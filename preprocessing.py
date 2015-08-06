@@ -119,8 +119,8 @@ class Instance:
 		alpha_sph = self.alphaToSph()
 		for i in range(self.get_length()):
 			csvArray.append(\
-			#[instanceId, self.label, self.accel_1[i], self.accel_2[i], self.accel_3[i], self.alpha_1[i], self.alpha_2[i], self.alpha_3[i]])
-			[instanceId, self.label]+accel_sph[i]+alpha_sph[i] )
+			[instanceId, self.label, self.accel_1[i], self.accel_2[i], self.accel_3[i], self.alpha_1[i], self.alpha_2[i], self.alpha_3[i]])
+			#[instanceId, self.label]+accel_sph[i]+alpha_sph[i] )
 		return csvArray
 
 TRAIN_SET_RATIO = 0.8
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 		tmp = readDataset(fileName) # array of Instance
 		tmp = [instance for instance in tmp if instance.get_timespan()>2] # filter out data shoter than 2 seconds
 		for instance in tmp:
-			instance.set_label(i)
+			instance.set_label(i+1) # label starts form 1, say 1,2,3,4
 			instance.alignment(100)
 		dataSet = dataSet + tmp
 		label = label + [i]*len(tmp)
